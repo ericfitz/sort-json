@@ -20,11 +20,10 @@ I wrote this to help me keep multiple localization files in sync. By sorting but
 Does not support JSONC or JSON5 - it doesn't know what to do with comments
 
 ## Usage
-
 ```
 Examples:
-  uv run sort_json.py config.json                      # Sort config.json
-  uv run sort_json.py config.json --diff other.json    # Sort both files and compare other.json with config.json
-  uv run sort_json.py config.json --diff *.json        # Sort all JSON files and compare each file in diff with config.json
-  uv run sort_json.py config.json --dry-run            # Show what would be done
+  python3 sort_json.py config.json                      # Sort config.json
+  python3 sort_json.py config.json --diff other.json    # Sort both files and compare other.json with config.json
+  python3 sort_json.py config.json --diff *.json        # Sort all JSON files and compare each file in diff with config.json
+  python3 sort_json.py config.json --dry-run            # Show what would be done
 ```
