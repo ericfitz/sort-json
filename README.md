@@ -23,8 +23,8 @@ Does not support JSONC or JSON5 - it doesn't know what to do with comments
 
 ```
 Examples:
-  config.json                          # Sort config.json
-  config.json --diff other.json        # Sort both files and compare other.json with config.json
-  config.json --diff *.json            # Sort all JSON files and compare each file in diff with config.json
-  config.json --dry-run                # Show what would be done
+  uv run sort_json.py config.json                      # Sort config.json
+  uv run sort_json.py config.json --diff other.json    # Sort both files and compare other.json with config.json
+  uv run sort_json.py config.json --diff *.json        # Sort all JSON files and compare each file in diff with config.json
+  uv run sort_json.py config.json --dry-run            # Show what would be done
 ```
