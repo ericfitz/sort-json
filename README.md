@@ -4,6 +4,8 @@
 
 Sort JSON file(s), maintaining hierarchy, and optionally compare with other files.
 
+Backups are automatically created before overwriting files; the backups are stored in $TMPDIR
+
 ## Requirements
 
 - Requires Python 3.6+ (uses f-strings)
@@ -25,5 +27,4 @@ Examples:
   config.json --diff other.json        # Sort both files and compare other.json with config.json
   config.json --diff *.json            # Sort all JSON files and compare each file in diff with config.json
   config.json --dry-run                # Show what would be done
-  config.json --yolo                   # Sort and delete backup files
 ```

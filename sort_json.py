@@ -7,6 +7,7 @@ import json
 import os
 import argparse
 import glob
+import tempfile
 from collections import OrderedDict
 
 
@@ -82,11 +83,11 @@ def confirm_overwrite(file_path, auto_yes):
 
 
 def rename_and_save_json(data, original_path, auto_yes, dry_run=False):
-    """Rename original file to old- prefix and save sorted JSON with original filename."""
+    """Rename original file to backup in $TMPDIR and save sorted JSON with original filename."""
     # Define paths
-    dir_name = os.path.dirname(original_path) or "."
     base_name = os.path.basename(original_path)
-    old_path = os.path.join(dir_name, f"old-{base_name}")
+    tmp_dir = tempfile.gettempdir()
+    old_path = os.path.join(tmp_dir, f"old-{base_name}")
 
     if dry_run:
         print(f"[DRY RUN] Would rename {original_path} to {old_path}")
@@ -123,22 +124,7 @@ def rename_and_save_json(data, original_path, auto_yes, dry_run=False):
         return False
 
 
-def cleanup_backup_files(file_paths):
-    """Delete backup files (old-*) for the given file paths."""
-    for file_path in file_paths:
-        dir_name = os.path.dirname(file_path) or "."
-        base_name = os.path.basename(file_path)
-        old_path = os.path.join(dir_name, f"old-{base_name}")
-
-        if os.path.exists(old_path):
-            try:
-                os.remove(old_path)
-                print(f"Deleted backup file {old_path}")
-            except OSError as e:
-                print(f"Warning: Failed to delete backup file {old_path}: {e}")
-
-
-def main(main_file_path, diff_files=None, auto_yes=False, dry_run=False, yolo=False):
+def main(main_file_path, diff_files=None, auto_yes=False, dry_run=False):
     # Load and sort main JSON file
     main_data = load_and_sort_json(main_file_path)
     if main_data is None:
@@ -149,7 +135,6 @@ def main(main_file_path, diff_files=None, auto_yes=False, dry_run=False, yolo=Fa
     if not success:
         return False
 
-    files_to_cleanup = [main_file_path]
 
     # If diff files specified, compare each one against the main file
     if diff_files:
@@ -170,14 +155,8 @@ def main(main_file_path, diff_files=None, auto_yes=False, dry_run=False, yolo=Fa
 
             # Sort and save the diff file
             diff_success = rename_and_save_json(diff_data, diff_file, auto_yes, dry_run)
-            if diff_success:
-                files_to_cleanup.append(diff_file)
-            else:
+            if not diff_success:
                 success = False
-
-    # Clean up backup files if yolo option is used
-    if success and yolo and not dry_run:
-        cleanup_backup_files(files_to_cleanup)
 
     return success
 
@@ -191,7 +170,6 @@ Examples:
   %(prog)s config.json --diff other.json        # Sort both files and compare other.json with config.json
   %(prog)s config.json --diff *.json            # Sort all JSON files and compare each file in diff with config.json
   %(prog)s config.json --dry-run                # Show what would be done
-  %(prog)s config.json --yolo                   # Sort and delete backup files
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -212,11 +190,6 @@ Examples:
         action="store_true",
         help="Show what would be done without actually writing files",
     )
-    parser.add_argument(
-        "--yolo",
-        action="store_true",
-        help="Delete backup files (old-*) after successful operation",
-    )
     args = parser.parse_args()
 
     # Expand glob patterns in diff files
@@ -229,8 +202,6 @@ Examples:
             else:
                 diff_files.append(pattern)  # Keep original if no glob match
 
-    success = main(
-        args.file, diff_files, args.yes or args.yolo, args.dry_run, args.yolo
-    )
+    success = main(args.file, diff_files, args.yes, args.dry_run)
     if not success:
         exit(1)
